@@ -2,6 +2,7 @@ import json
 import os
 import requests
 import tempfile
+import time
 from zipfile import ZipFile
 
 API_URL = "https://www.virustotal.com/api/v3/files"  # URL, куда грузим файл для проверки
@@ -24,10 +25,19 @@ def analyzeFileInVirusTotal(dir, file):
     response = requests.post(API_URL, files=filesWrapper, headers=API_HEADERS)
 
     analysesUrl = response.json()["data"]["links"]["self"]
-    analysesResponse = requests.get(analysesUrl, headers=API_HEADERS)
+    # Ждем пока будут результаты проверки (может быть очередь)
+    while True:
+        analysesResponse = requests.get(analysesUrl, headers=API_HEADERS)
+        analysesFullJson = analysesResponse.json()
+        if analysesFullJson["data"]["attributes"]["status"] == 'completed':
+            break
+
+        print(analysesFullJson)
+        print('waiting...')
+        time.sleep(3)
+
     print('Результаты анализа файла ' + file)
     print('Краткие результаты:')
-    analysesFullJson = analysesResponse.json()
     print(json.dumps(analysesFullJson["data"]["attributes"]["stats"], indent=4))
 
     antiviruses = analysesFullJson["data"]["attributes"]["results"]
