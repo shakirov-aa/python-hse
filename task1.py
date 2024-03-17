@@ -25,7 +25,7 @@ def analyzeFileInVirusTotal(dir, file):
 
     analysesUrl = response.json()["data"]["links"]["self"]
     analysesResponse = requests.get(analysesUrl, headers=API_HEADERS)
-    print('Результаты анализа')
+    print('Результаты анализа файла ' + file)
     print('Краткие результаты:')
     analysesFullJson = analysesResponse.json()
     print(json.dumps(analysesFullJson["data"]["attributes"]["stats"], indent=4))
